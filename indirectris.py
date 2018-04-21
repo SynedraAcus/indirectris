@@ -30,6 +30,9 @@ t = BearTerminal(font_path='cp437_12x12.png', size='60x45', title='Indirectris',
 dispatcher = BearEventDispatcher()
 dispatcher.register_event_type('request_destruction')
 dispatcher.register_event_type('request_installation')
+dispatcher.register_event_type('h7')
+dispatcher.register_event_type('v7')
+dispatcher.register_event_type('square')
 loop = BearLoop(t, dispatcher)
 dispatcher.register_listener(ClosingListener(), ['misc_input', 'tick'])
 
@@ -46,13 +49,15 @@ figures = FigureManager(field=field,
 figures.register_terminal(t)
 dispatcher.register_listener(figures, ['request_destruction',
                                        'request_installation'])
+dispatcher.register_listener(building, ['square', 'h7', 'v7'])
 
-building.add_figure(Widget([['*', '*'], ['*', '*']],
-                     [['blue', 'blue'], ['blue', 'blue']]), pos=(25, 25))
-tetris[25][25] = 1
-tetris[25][26] = 1
-tetris[26][25] = 1
-tetris[26][26] = 1
+# building.add_figure(Widget([['*', '*', '*'], ['*', '*', '*'], ['*', '*', '*']],
+#                      [['blue', 'blue', 'blue'], ['blue', 'blue', 'blue'],
+#                       ['blue', 'blue', 'blue']]), pos=(25, 25))
+building.add_figure(Widget([['*' for x in range(7)]], [['blue' for x in range(7)]]),
+                           pos=(25, 25))
+for x_off in range(7):
+        tetris[25+x_off][25] = 1
 attractor = Attractor(*atlas.get_element('attractor'),
                       field=field, mass=150)
 field.add_attractor(attractor, (10, 25))
@@ -66,7 +71,7 @@ dispatcher.register_listener(attractor2, ['misc_input', 'key_up', 'key_down'])
 logger = LoggingListener(sys.stdout)
 fps = FPSCounter()
 dispatcher.register_listener(fps, 'tick')
-dispatcher.register_listener(logger, 'key_up')
+dispatcher.register_listener(logger, ['v7', 'h7', 'square'])
 r = Refresher(t)
 dispatcher.register_listener(r, 'service')
 

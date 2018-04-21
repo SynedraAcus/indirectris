@@ -115,6 +115,56 @@ class TetrisSystem:
                     return c
         return 0
     
+    def check_for_removal(self):
+        """
+        Check if something is to be removed
+        :param pos:
+        :return:
+        """
+        # Return events, so this is expected to be called by FigureManager's
+        # on_event. Later BuildingWidget will catch the event and update itself
+        # accordingly. Maybe also some sound emission or animation or something
+        r = []
+        for x in range(len(self.cells)-3):
+            for y in range(len(self.cells[0])-3):
+                # Check whether a given cell is a top-left corner of something
+                if self[x][y] == 1:
+                    if x <= len(self.cells) - 7:
+                        #Check whether this cell is left side of horizontal 7
+                        h7 = True
+                        for x_1 in range(1, 7):
+                            if self[x + x_1][y] != 1:
+                                h7 = False
+                        if h7:
+                            for x_1 in range(7):
+                                self[x+x_1][y] = 0
+                            r.append(BearEvent(event_type='h7',
+                                           event_value=(x, y)))
+                    if y <= len(self.cells[0]) - 7:
+                        # Or a vertical 7
+                        v7 = True
+                        for y_1 in range(1, 7):
+                            if self[x][y+y_1] != 1:
+                                v7 = False
+                        if v7:
+                            for y_1 in range(1, 7):
+                                self[x][y+y_1] = 0
+                            r.append(BearEvent(event_type='v7',
+                                               event_value=(x, y)))
+                    if x <= len(self.cells)-3 and y <= len(self.cells[0])-3:
+                        sq = True
+                        for x_1 in range(3):
+                            for y_1 in range(3):
+                                if self[x+x_1][y+y_1] != 1:
+                                    sq = False
+                        if sq:
+                            for x_1 in range(3):
+                                for y_1 in range(3):
+                                    self[x+x_1][y+y_1] = 0
+                            r.append(BearEvent(event_type='square',
+                                               event_value=(x, y)))
+        return r
+    
     def __getitem__(self, item):
         return self.cells[item]
         
@@ -133,7 +183,8 @@ class FigureManager(Listener):
             self.destroy_figure(event.event_value)
         elif event.event_type == 'request_installation':
             self.stop_figure(event.event_value)
-    
+            return self.tetris.check_for_removal()
+            
     def create_figure(self):
         fig_widget = Attractee(*self.atlas.get_element(
                                     random.choice(self.figure_names)),
@@ -170,7 +221,7 @@ class BuildingWidget(Widget):
     It only *displays* them, ie any logic is in TetrisSystem or widgets' code
     """
     def __init__(self, size):
-        chars = [['.' for x in range(size[0])] for y in range(size[1])]
+        chars = [[' ' for x in range(size[0])] for y in range(size[1])]
         colors = copy_shape(chars, 'dark gray')
         super().__init__(chars, colors)
     
@@ -185,9 +236,24 @@ class BuildingWidget(Widget):
         if self.terminal:
             self.terminal.update_widget(self)
     
-    def remove_region(self, pos, shape):
-        pass
-    
+    def on_event(self, event):
+        if event.event_type == 'square':
+            x, y = event.event_value
+            for x_off in range(3):
+                for y_off in range(3):
+                    self.chars[y+y_off][x+x_off] = ' '
+            self.terminal.update_widget(self)
+        elif event.event_type == 'v7':
+            x, y = event.event_value
+            for y_off in range(7):
+                self.chars[y+y_off][x] = ' '
+            self.terminal.update_widget(self)
+        elif event.event_type == 'h7':
+            x, y = event.event_value
+            for x_off in range(7):
+                self.chars[y][x+x_off] = ' '
+            self.terminal.update_widget(self)
+
     
 class Attractor(Widget):
     def __init__(self, *args, mass=100, field=None, **kwargs):
@@ -275,7 +341,6 @@ class Attractee(Widget):
                 new_y = ypos
             if new_x != xpos or new_y != ypos:
                 t = self.tetris.check_move((new_x, new_y), self.chars)
-                print(t)
                 if t == 0:
                     self.parent.move_widget(self, (new_x, new_y))
                 elif t == 1:
