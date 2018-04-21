@@ -186,12 +186,11 @@ class FigureManager(Listener):
             return self.tetris.check_for_removal()
             
     def create_figure(self):
-        fig_widget = Attractee(*self.atlas.get_element(
-                                    random.choice(self.figure_names)),
+        print('created')
+        return Attractee(*self.atlas.get_element(
+                random.choice(self.figure_names)),
                                field=self.field, vx=0, vy=0,
                                tetris=self.tetris)
-        self.terminal.add_widget(fig_widget, (30, 40), layer=2)
-        self.dispatcher.register_listener(fig_widget, 'tick')
     
     def destroy_figure(self, widget):
         self.terminal.remove_widget(widget)
@@ -358,9 +357,10 @@ class EmitterWidget(Layout):
     
     Else it just travels around screen edges.
     """
-    def __init__(self, chars, colors, manager):
+    def __init__(self, chars, colors, manager, dispatcher):
         super().__init__(chars, colors)
         self.manager = manager
+        self.dispatcher = dispatcher
         self.have_waited = 0
         self.abs_vx = 25
         self.abs_vy = 25
@@ -368,8 +368,10 @@ class EmitterWidget(Layout):
         self.vx = -1 * self.abs_vx
         self.delay = 1/self.abs_vx
         self.vy = 0
+        self.add_child(self.manager.create_figure(), pos=(1, 1))
         
     def on_event(self, event):
+        super().on_event(event)
         if event.event_type == 'tick':
             self.have_waited += event.event_value
             if self.have_waited >= self.delay:
@@ -407,6 +409,12 @@ class EmitterWidget(Layout):
                     self.vx = -1 * self.abs_vx
                     self.vy = 0
                     self.delay = 1/self.abs_vx
-                
                 self.have_waited = 0
-                
+        elif event.event_type == 'request_installation' or \
+                event.event_type == 'request_destruction':
+            fig = self.children[1]
+            self.remove_child(fig, remove_completely=True)
+            pos = self.terminal.widget_locations[self].pos
+            self.dispatcher.register_listener(fig, 'tick')
+            self.terminal.add_widget(fig, (pos[0]+1, pos[1]+1), layer=6)
+            self.add_child(self.manager.create_figure(), (1, 1))

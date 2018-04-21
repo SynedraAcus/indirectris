@@ -70,9 +70,13 @@ attractor2 = Attractor(*atlas.get_element('attractor'),
 field.add_attractor(attractor2, (50, 25))
 dispatcher.register_listener(attractor, ['misc_input', 'key_up', 'key_down'])
 dispatcher.register_listener(attractor2, ['misc_input', 'key_up', 'key_down'])
-emitter = EmitterWidget(*atlas.get_element('emitter'), manager=figures)
-dispatcher.register_listener(emitter, 'tick')
-
+emitter = EmitterWidget(*atlas.get_element('emitter'), manager=figures,
+                        dispatcher=dispatcher)
+dispatcher.register_listener(emitter, ['tick', 'service',
+                                       'request_installation',
+                                       'request_destruction'])
+initial_figure = figures.create_figure()
+dispatcher.register_listener(initial_figure, 'tick')
 # Debug stuff
 logger = LoggingListener(sys.stdout)
 fps = FPSCounter()
@@ -82,7 +86,7 @@ r = Refresher(t)
 dispatcher.register_listener(r, 'service')
 
 t.start()
-figures.create_figure()
+t.add_widget(initial_figure, pos=(25, 40), layer=6)
 t.add_widget(building, pos=(0, 0), layer=0)
 t.add_widget(attractor, pos=(10, 25), layer=1)
 t.add_widget(attractor2, pos=(50, 25), layer=3)
