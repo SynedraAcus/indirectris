@@ -33,7 +33,7 @@ loop = BearLoop(t, dispatcher)
 dispatcher.register_listener(ClosingListener(), ['misc_input', 'tick'])
 
 # Game objects
-field=GravityField((60, 45))
+field = GravityField((60, 45))
 building = BuildingWidget((60, 45))
 tetris = TetrisSystem((60, 45))
 figures = FigureManager(field=field,
@@ -46,7 +46,7 @@ dispatcher.register_listener(figures, ['request_destruction',
 
 building.add_figure(Widget([['*', '*'], ['*', '*']],
                      [['blue', 'blue'], ['blue', 'blue']]), pos=(25, 25))
-tetris[25][25] = 1
+
 attractor = Attractor([['#', '#'], ['#', '#']], [['red', 'red'], ['red', 'red']],
                       field=field, mass=150)
 field.add_attractor(attractor, (10, 25))
