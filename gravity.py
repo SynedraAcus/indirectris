@@ -5,9 +5,10 @@ A gravity system and basic attractor/attractee/gravfield classes
 from bear_hug.bear_utilities import copy_shape
 from bear_hug.event import BearEvent
 from bear_hug.widgets import Widget, Listener
+
 from collections import namedtuple
 from math import sqrt
-
+import random
 Gravcell = namedtuple('Gravcell', ('ax', 'ay'))
 
 
@@ -119,11 +120,13 @@ class TetrisSystem:
         
         
 class FigureManager(Listener):
-    def __init__(self, field, tetris, dispatcher, building):
+    def __init__(self, field, tetris, dispatcher, building, atlas):
         self.field = field
         self.tetris = tetris
         self.dispatcher = dispatcher
         self.building = building
+        self.atlas = atlas
+        self.figure_names = [x for x in self.atlas.elements if 'f_' in x]
     
     def on_event(self, event):
         if event.event_type == 'request_destruction':
@@ -132,9 +135,9 @@ class FigureManager(Listener):
             self.stop_figure(event.event_value)
     
     def create_figure(self):
-        fig_widget = Attractee([['*', '*'], ['*', '*']],
-                               [['red', 'red'], ['red', 'red']],
-                                field=self.field, vx=0, vy=0,
+        fig_widget = Attractee(*self.atlas.get_element(
+                                    random.choice(self.figure_names)),
+                               field=self.field, vx=0, vy=0,
                                tetris=self.tetris)
         self.terminal.add_widget(fig_widget, (30, 40), layer=2)
         self.dispatcher.register_listener(fig_widget, 'tick')

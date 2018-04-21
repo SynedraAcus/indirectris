@@ -41,7 +41,8 @@ tetris = TetrisSystem((60, 45))
 figures = FigureManager(field=field,
                         tetris=tetris,
                         dispatcher=dispatcher,
-                        building=building)
+                        building=building,
+                        atlas=atlas)
 figures.register_terminal(t)
 dispatcher.register_listener(figures, ['request_destruction',
                                        'request_installation'])
@@ -51,7 +52,7 @@ building.add_figure(Widget([['*', '*'], ['*', '*']],
 tetris[25][25] = 1
 tetris[25][26] = 1
 tetris[26][25] = 1
-tetris[25][26] = 1
+tetris[26][26] = 1
 attractor = Attractor(*atlas.get_element('attractor'),
                       field=field, mass=150)
 field.add_attractor(attractor, (10, 25))
