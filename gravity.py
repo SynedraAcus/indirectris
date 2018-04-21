@@ -77,6 +77,7 @@ class GravityField:
                 a_y = sum(self.attractor_fields[a][x][y].ay
                             for a in self.attractor_fields)
                 self.sum_field[x][y] = Gravcell(a_x, a_y)
+        print('Rebuilt')
     
     def __getitem__(self, item):
         # List API for ease of lookup
@@ -118,7 +119,7 @@ class Attractor(Widget):
                     pos = self.terminal.widget_locations[self].pos
                     shift = (mouse_x-self.grab_pos[0], mouse_y - self.grab_pos[1])
                     self.terminal.move_widget(self,
-                                (pos[0]+shift[0], pos[1]+shift[1]), refresh=True)
+                                (pos[0]+shift[0], pos[1]+shift[1]))
                     self.grab_pos = (self.grab_pos[0]+shift[0],
                                      self.grab_pos[1]+shift[1])
                     self.terminal.refresh()
@@ -168,4 +169,4 @@ class Attractee(Widget):
                 self.y_waited = 0
             else:
                 new_y = ypos
-            self.parent.move_widget(self, (new_x, new_y), refresh=True)
+            self.parent.move_widget(self, (new_x, new_y))
