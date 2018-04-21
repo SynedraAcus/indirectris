@@ -4,13 +4,28 @@ from bear_hug.bear_hug import BearTerminal, BearLoop
 from bear_hug.event import BearEventDispatcher
 from bear_hug.widgets import Widget, ClosingListener, Label
 
+from gravity import GravityField, Attractor, Attractee
+
 t = BearTerminal(font_path='cp437_12x12.png', size='60x45', title='Indirectris',
                  filter=['keyboard', 'mouse'])
 dispatcher = BearEventDispatcher()
 loop = BearLoop(t, dispatcher)
 dispatcher.register_listener(ClosingListener(), ['misc_input', 'tick'])
 
-t.start()
-t.add_widget(Label('Test\nTest'), pos=(10, 10), layer=0)
+field = GravityField((60, 45))
+attractor = Attractor([['#', '#'], ['#', '#']], [['red', 'red'], ['red', 'red']],
+                      field=field, mass=150)
+field.add_attractor(attractor, (10, 25))
+attractor2 = Attractor([['#', '#'], ['#', '#']], [['red', 'red'], ['red', 'red']],
+                      field=field, mass=150)
+field.add_attractor(attractor2, (50, 25))
+attractee = Attractee([['*', '*'], ['*', '*']], [['red', 'red'], ['red', 'red']],
+                      field=field, vx=0, vy=0, attr=attractor)
+dispatcher.register_listener(attractee, 'tick')
 
+
+t.start()
+t.add_widget(attractor, pos=(10, 25), layer=1)
+t.add_widget(attractor2, pos=(50, 25), layer=3)
+t.add_widget(attractee, pos=(30, 40), layer=2)
 loop.run()
