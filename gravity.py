@@ -36,6 +36,11 @@ class GravityField:
                                             for x in range(self.size[0])]
         self.rebuild_attractor_field(attractor)
         self.rebuild_sum_field()
+        
+    def move_attractor(self, attractor, pos):
+        self.positions[attractor] = pos
+        self.rebuild_attractor_field(attractor)
+        self.rebuild_sum_field()
     
     def rebuild_attractor_field(self, attractor):
         """
@@ -72,8 +77,6 @@ class GravityField:
                 a_y = sum(self.attractor_fields[a][x][y].ay
                             for a in self.attractor_fields)
                 self.sum_field[x][y] = Gravcell(a_x, a_y)
-        for y in range(self.size[1]):
-            print(';'.join(f'{x.ax}, {x.ay}' for x in self.sum_field[y]))
     
     def __getitem__(self, item):
         # List API for ease of lookup
@@ -85,12 +88,44 @@ class Attractor(Widget):
         super().__init__(*args, **kwargs)
         self.mass = mass
         self.field = field
-        # Easier to remember position here
+        self.dragged = False
+        # Position where the mouse was when it was grabbed
+        # Easier than store a position of mouse relative to self.pos and recalc
+        # every TK_MOUSE_MOVE
+        self.grab_pos = (0, 0)
         
     def on_event(self, event):
-        pass
-    
-
+        if event.event_type == 'key_down':
+            if event.event_value == 'TK_MOUSE_LEFT':
+                # Mouse left down, check if need to drag
+                mouse_x = self.terminal.check_state('TK_MOUSE_X')
+                mouse_y = self.terminal.check_state('TK_MOUSE_Y')
+                pos = self.terminal.widget_locations[self].pos
+                if pos[0] <= mouse_x <= pos[0] + self.width and \
+                        pos[1] <= mouse_y <= pos[1] + self.height:
+                    self.dragged = True
+                    self.grab_pos = (mouse_x, mouse_y)
+        elif event.event_type == 'key_up':
+            if event.event_value == 'TK_MOUSE_LEFT':
+                if self.dragged:
+                    self.dragged = False
+        elif event.event_type == 'misc_input':
+            if event.event_value == 'TK_MOUSE_MOVE' and self.dragged:
+                mouse_x = self.terminal.check_state('TK_MOUSE_X')
+                mouse_y = self.terminal.check_state('TK_MOUSE_Y')
+                if mouse_x != self.grab_pos[0] or \
+                        mouse_y != self.grab_pos[1]:
+                    pos = self.terminal.widget_locations[self].pos
+                    shift = (mouse_x-self.grab_pos[0], mouse_y - self.grab_pos[1])
+                    self.terminal.move_widget(self,
+                                (pos[0]+shift[0], pos[1]+shift[1]), refresh=True)
+                    self.grab_pos = (self.grab_pos[0]+shift[0],
+                                     self.grab_pos[1]+shift[1])
+                    self.terminal.refresh()
+                    self.field.move_attractor(self,
+                                          (pos[0]+shift[0], pos[1]+shift[1]))
+                    
+                    
 class Attractee(Widget):
     def __init__(self, *args, field=None, vx=1, vy=1, attr = None,**kwargs):
         super().__init__(*args, **kwargs)
@@ -112,27 +147,6 @@ class Attractee(Widget):
         self.y_waited = 0
         self.attr = attr
         
-    # def on_event(self, event):
-    #     if event.event_type == 'tick':
-    #         x, y = self.parent.widget_locations[self].pos
-    #         attr_x, attr_y = self.parent.widget_locations[self.attr].pos
-    #         dist = sqrt((x - attr_x) ** 2 + (y - attr_y) ** 2)
-    #         self.vx += (self.attr.mass * (attr_x - x) / dist ** 3) * event.event_value
-    #         self.vy += (self.attr.mass * (attr_y - y) / dist ** 3) * event.event_value
-    #         self.x_delay = abs(1/self.vx)
-    #         self.y_delay = abs(1/self.vy)
-    #         self.x_waited += event.event_value
-    #         self.y_waited += event.event_value
-    #         print(self.vx, self.vy)
-    #         if self.x_waited >= self.x_delay and self.vx != 0):
-    #             self.parent.move_widget(self, (x+round(self.vx/abs(self.vx)),
-    #                                            y), refresh=True)
-    #             self.x_waited = 0
-    #         if self.y_waited >= self.y_delay and self.vy != 0:
-    #             self.parent.move_widget(self, (x, y+round(self.vy/abs(self.vy))),
-    #                                     refresh=True)
-    #             self.y_waited = 0
-        
     def on_event(self, event):
         if event.event_type == 'tick':
             self.x_waited += event.event_value
@@ -140,26 +154,18 @@ class Attractee(Widget):
             xpos, ypos = self.parent.widget_locations[self].pos
             self.vx += self.field[xpos][ypos].ax * event.event_value
             self.vy += self.field[xpos][ypos].ay * event.event_value
-            print(self.vx, self.vy)
             if self.vx != 0:
                 self.x_delay = abs(1 / self.vx)
             if self.vy != 0:
                 self.y_delay = abs(1 / self.vy)
             if self.x_waited >= self.x_delay and self.vx != 0:
                 new_x = xpos+round(self.vx/abs(self.vx))
-                # self.parent.move_widget(self, (xpos+round(self.vx/abs(self.vx)),
-                #                                ypos), refresh=True)
                 self.x_waited = 0
             else:
                 new_x = xpos
             if self.y_waited >= self.y_delay and self.vy != 0:
                 new_y = ypos+round(self.vy/abs(self.vy))
-                # self.parent.move_widget(self, (xpos,
-                #                                ypos+round(self.vy/abs(self.vy))),
-                #                         refresh=True)
                 self.y_waited = 0
             else:
                 new_y = ypos
             self.parent.move_widget(self, (new_x, new_y), refresh=True)
-
-    #
