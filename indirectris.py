@@ -27,6 +27,7 @@ class Refresher(Listener):
 t = BearTerminal(font_path='cp437_12x12.png', size='60x45', title='Indirectris',
                  filter=['keyboard', 'mouse'])
 dispatcher = BearEventDispatcher()
+dispatcher.register_event_type('request_destruction')
 loop = BearLoop(t, dispatcher)
 dispatcher.register_listener(ClosingListener(), ['misc_input', 'tick'])
 
@@ -34,6 +35,7 @@ field = GravityField((60, 45))
 tetris = TetrisSystem((60, 45))
 figures = FigureManager(field=field, tetris=tetris, dispatcher=dispatcher)
 figures.register_terminal(t)
+dispatcher.register_listener(figures, 'request_destruction')
 
 attractor = Attractor([['#', '#'], ['#', '#']], [['red', 'red'], ['red', 'red']],
                       field=field, mass=150)

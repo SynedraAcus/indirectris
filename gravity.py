@@ -3,6 +3,7 @@ A gravity system and basic attractor/attractee/gravfield classes
 """
 
 from bear_hug.widgets import Widget, Listener
+from bear_hug.event import BearEvent
 from collections import namedtuple
 from math import sqrt
 
@@ -119,8 +120,9 @@ class FigureManager(Listener):
         self.tetris = tetris
         self.dispatcher = dispatcher
     
-    def on_event(self):
-        pass
+    def on_event(self, event):
+        if event.event_type == 'request_destruction':
+            self.destroy_figure(event.event_value)
     
     def create_figure(self):
         fig_widget = Attractee([['*', '*'], ['*', '*']],
@@ -132,8 +134,10 @@ class FigureManager(Listener):
     
     def destroy_figure(self, widget):
         self.terminal.remove_widget(widget)
+        self.dispatcher.unregister_listener(widget, 'all')
         self.create_figure()
-    
+
+
 class Attractor(Widget):
     def __init__(self, *args, mass=100, field=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -224,4 +228,5 @@ class Attractee(Widget):
                 if t == 0:
                     self.parent.move_widget(self, (new_x, new_y))
                 elif t == 2:
-                    pass
+                    return BearEvent(event_type='request_destruction',
+                                     event_value=self)
