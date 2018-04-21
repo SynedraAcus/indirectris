@@ -2,11 +2,12 @@
 A gravity system and basic attractor/attractee/gravfield classes
 """
 
-from bear_hug.widgets import Widget
+from bear_hug.widgets import Widget, Listener
 from collections import namedtuple
 from math import sqrt
 
 Gravcell = namedtuple('Gravcell', ('ax', 'ay'))
+
 
 class GravityField:
     """
@@ -83,7 +84,56 @@ class GravityField:
         # List API for ease of lookup
         return self.sum_field[item]
 
+
+class TetrisSystem:
+    """
+    All the tetris logic
+    
+    Cell can contain either zero (can move), 1 (should stop and all the moved
+    cells become 1) or 2 (should stop and moved element should be destroyed,
+    eg with screen edges or attractor centers).
+    2 takes precedence over 1
+    """
+    def __init__(self, size):
+        self.size = size
+        self.cells = [[0 for y in range(size[1])] for x in range(size[0])]
+        for x in range(size[0]):
+            self.cells[x][0] = 2
+            self.cells[x][size[1]-1] = 2
+        for y in range(2, size[1]-1):
+            self.cells[0][y] = 2
+            self.cells[size[0]-1][y] = 2
+            
+    def check_move(self, pos, fig_shape):
+        for x_offset in range(len(fig_shape)):
+            for y_offset in range(len(fig_shape[0])):
+                c = self.cells[pos[0]+x_offset][pos[1] + y_offset]
+                if c > 0 :
+                    return c
+        return 0
         
+        
+class FigureManager(Listener):
+    def __init__(self, field, tetris, dispatcher):
+        self.field = field
+        self.tetris = tetris
+        self.dispatcher = dispatcher
+    
+    def on_event(self):
+        pass
+    
+    def create_figure(self):
+        fig_widget = Attractee([['*', '*'], ['*', '*']],
+                               [['red', 'red'], ['red', 'red']],
+                                field=self.field, vx=0, vy=0,
+                               tetris=self.tetris)
+        self.terminal.add_widget(fig_widget, (30, 40), layer=2)
+        self.dispatcher.register_listener(fig_widget, 'tick')
+    
+    def destroy_figure(self, widget):
+        self.terminal.remove_widget(widget)
+        self.create_figure()
+    
 class Attractor(Widget):
     def __init__(self, *args, mass=100, field=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -128,10 +178,10 @@ class Attractor(Widget):
                     
                     
 class Attractee(Widget):
-    def __init__(self, *args, field=None, vx=1, vy=1, attr = None,**kwargs):
+    def __init__(self, *args, field=None, vx=1, vy=1, tetris=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.field = field
-        # Easier to remember position here
+        self.tetris = tetris
         self.vx = vx
         self.vy = vy
         # Delay between steps, in seconds
@@ -146,7 +196,6 @@ class Attractee(Widget):
         # How long since last step
         self.x_waited = 0
         self.y_waited = 0
-        self.attr = attr
         
     def on_event(self, event):
         if event.event_type == 'tick':
@@ -160,13 +209,19 @@ class Attractee(Widget):
             if self.vy != 0:
                 self.y_delay = abs(1 / self.vy)
             if self.x_waited >= self.x_delay and self.vx != 0:
-                new_x = xpos+round(self.vx/abs(self.vx))
+                new_x = xpos + round(self.vx/abs(self.vx))
                 self.x_waited = 0
             else:
                 new_x = xpos
             if self.y_waited >= self.y_delay and self.vy != 0:
-                new_y = ypos+round(self.vy/abs(self.vy))
+                new_y = ypos + round(self.vy/abs(self.vy))
                 self.y_waited = 0
             else:
                 new_y = ypos
-            self.parent.move_widget(self, (new_x, new_y))
+            if new_x != xpos or new_y != ypos:
+                t = self.tetris.check_move((new_x, new_y), fig_shape=self.chars)
+                print(t)
+                if t == 0:
+                    self.parent.move_widget(self, (new_x, new_y))
+                elif t == 2:
+                    pass
