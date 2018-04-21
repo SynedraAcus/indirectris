@@ -10,7 +10,7 @@ class ScoreCounter(Label):
     Counts the score
     """
     def __init__(self, **kwargs):
-        super().__init__('00000', *kwargs)
+        super().__init__('00000', color='#ff0000ff', *kwargs)
         self.score = 0
     
     def on_event(self, event):
