@@ -1,9 +1,10 @@
 #! /usr/bin/env python3.6
 
 import sys
+from collections import deque
 
 from bear_hug.bear_hug import BearTerminal, BearLoop
-from bear_hug.event import BearEventDispatcher
+from bear_hug.event import BearEventDispatcher, BearEvent
 from bear_hug.resources import XpLoader, Atlas
 from bear_hug.widgets import Widget, ClosingListener, Label,Listener, \
     LoggingListener, FPSCounter
@@ -24,6 +25,21 @@ class Refresher(Listener):
     def on_event(self, event):
         if event.event_type == 'service' and event.event_value == 'tick_over':
             self.terminal.refresh()
+            
+class RestartButton(Label):
+    """
+    A Label that restarts the game if clicked
+    """
+    def on_event(self, event):
+        if event.event_type == 'key_down' and\
+                event.event_value == 'TK_MOUSE_LEFT':
+            mouse_x = self.terminal.check_state('TK_MOUSE_X')
+            mouse_y = self.terminal.check_state('TK_MOUSE_Y')
+            pos = self.terminal.widget_locations[self].pos
+            if pos[0] <= mouse_x <= pos[0] + self.width and \
+                    pos[1] <= mouse_y <= pos[1] + self.height:
+                close_game()
+                init_game()
 
 
 def init_game():
@@ -37,7 +53,12 @@ def init_game():
     global tetris
     global figures
     global t
-    atlas = Atlas(XpLoader('indirectris.xp'), 'indirectris.json')
+    global attractor
+    global attractor2
+    global emitter
+    global initial_figure
+    global loop
+    global dispatcher
     field = GravityField((60, 45))
     building = BuildingWidget((60, 45))
     tetris = TetrisSystem((60, 45))
@@ -81,13 +102,56 @@ def init_game():
     initial_figure = figures.create_figure()
     dispatcher.register_listener(initial_figure, 'tick')
     # Adding stuff
-    t.add_widget(Widget(*atlas.get_element('bottom_bar')), pos=(0, 45), layer=0)
     t.add_widget(score, pos=(39, 47), layer=1)
-    t.add_widget(initial_figure, pos=(25, 40), layer=6)
     t.add_widget(building, pos=(0, 0), layer=0)
     t.add_widget(attractor, pos=(10, 25), layer=1)
     t.add_widget(attractor2, pos=(50, 25), layer=3)
     t.add_widget(emitter, pos=(40, 40), layer=4)
+    t.add_widget(initial_figure, pos=(25, 40), layer=6)
+    print(initial_figure)
+    dispatcher.add_event(BearEvent(event_type='request_destruction',
+                                   event_value=initial_figure))
+    
+
+def close_game():
+    global building
+    global attractor
+    global attractor2
+    global emitter
+    global score
+    global dispatcher
+    global t
+    global figures
+    global initial_figure
+    figures = None
+    initial_figure = None
+    dispatcher.unregister_listener(building, 'all')
+    dispatcher.unregister_listener(attractor, 'all')
+    dispatcher.unregister_listener(attractor2, 'all')
+    dispatcher.unregister_listener(emitter.fig, 'all')
+    dispatcher.unregister_listener(emitter, 'all')
+    dispatcher.unregister_listener(score, 'all')
+    t.remove_widget(building)
+    t.remove_widget(attractor2)
+    t.remove_widget(attractor)
+    t.remove_widget(emitter.fig)
+    t.remove_widget(emitter)
+    t.remove_widget(score)
+    dispatcher = BearEventDispatcher()
+    dispatcher.register_event_type('request_destruction')
+    dispatcher.register_event_type('request_installation')
+    dispatcher.register_event_type('h7')
+    dispatcher.register_event_type('v7')
+    dispatcher.register_event_type('square')
+    #  This is a patent black magic, but it solves some very
+    # weird bug with restarting
+    loop.queue = dispatcher
+    dispatcher.register_listener(ClosingListener(), ['misc_input', 'tick'])
+    dispatcher.register_listener(r, 'service')
+    dispatcher.register_listener(fps, 'tick')
+    dispatcher.register_listener(score, ['h7', 'v7', 'square'])
+    dispatcher.register_listener(restart, 'key_down')
+    
     
 # Standart BLT boilerplate
 t = BearTerminal(font_path='cp437_12x12.png', size='60x50', title='Indirectris',
@@ -102,23 +166,34 @@ loop = BearLoop(t, dispatcher)
 dispatcher.register_listener(ClosingListener(), ['misc_input', 'tick'])
 
 # Game objects
-atlas = None
+# Init here so that the same objects can be reused (and safely created and
+# destroyed) between multiple games
+atlas = Atlas(XpLoader('indirectris.xp'), 'indirectris.json')
 field = None
 building = None
 tetris = None
 figures = None
+attractor = None
+attractor2 = None
+emitter = None
+score = None
+initial_figure = None
 
 # Debug stuff
 logger = LoggingListener(sys.stdout)
 fps = FPSCounter()
-dispatcher.register_listener(fps, 'tick')
-dispatcher.register_listener(logger, ['v7', 'h7', 'square'])
+# dispatcher.register_listener(logger, ['v7', 'h7', 'square'])
 r = Refresher(t)
-dispatcher.register_listener(r, 'service')
 score = ScoreCounter()
+restart = RestartButton('RESTART', color='#ff0000ff')
+dispatcher.register_listener(r, 'service')
+dispatcher.register_listener(fps, 'tick')
 dispatcher.register_listener(score, ['h7', 'v7', 'square'])
+dispatcher.register_listener(restart, 'key_down')
 
 t.start()
 init_game()
+t.add_widget(Widget(*atlas.get_element('bottom_bar')), pos=(0, 45), layer=0)
+t.add_widget(restart, pos=(49, 47), layer=1)
 t.add_widget(fps, pos=(0, 44), layer=1)
 loop.run()

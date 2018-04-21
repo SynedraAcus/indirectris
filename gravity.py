@@ -81,7 +81,6 @@ class GravityField:
                 a_y = sum(self.attractor_fields[a][x][y].ay
                             for a in self.attractor_fields)
                 self.sum_field[x][y] = Gravcell(a_x, a_y)
-        print('Rebuilt')
     
     def __getitem__(self, item):
         # List API for ease of lookup
@@ -186,7 +185,6 @@ class FigureManager(Listener):
             return self.tetris.check_for_removal()
             
     def create_figure(self):
-        print('created')
         return Attractee(*self.atlas.get_element(
                 random.choice(self.figure_names)),
                                field=self.field, vx=0, vy=0,
@@ -204,6 +202,7 @@ class FigureManager(Listener):
         :param widget:
         :return:
         """
+        print(self.terminal.widget_locations)
         pos = self.terminal.widget_locations[widget].pos
         self.building.add_figure(widget, pos)
         for x_offset in range(widget.width):
@@ -371,6 +370,7 @@ class EmitterWidget(Layout):
         self.delay = 1/self.abs_vx
         self.vy = 0
         self.add_child(self.manager.create_figure(), pos=(1, 1))
+        self.fig = None
         
     def on_event(self, event):
         super().on_event(event)
@@ -390,14 +390,12 @@ class EmitterWidget(Layout):
                 # The emitter always moves clockwise
                 # So some stuff is hardcoded
                 if new_x == 0 and self.vx < 0:
-                    print('up')
                     #Lower left
                     self.vx = 0
                     self.vy = -1 * self.abs_vy
                     self.delay = 1/self.abs_vy
                 elif new_y == 0 and self.vy < 0:
                     # Upper left
-                    print('right')
                     self.vy = 0
                     self.vx = self.abs_vx
                     self.delay = 1/self.abs_vx
@@ -415,11 +413,11 @@ class EmitterWidget(Layout):
         elif event.event_type == 'request_installation' or \
                 event.event_type == 'request_destruction':
             pos = self.terminal.widget_locations[self].pos
-            fig = self.children[1]
+            self.fig = self.children[1]
             # The number 7 is empirical; maybe I'll change it later
-            fig.vx = (30 - pos[0])/7
-            fig.vy = (23-pos[1])/7
-            self.remove_child(fig, remove_completely=True)
-            self.dispatcher.register_listener(fig, 'tick')
-            self.terminal.add_widget(fig, (pos[0]+1, pos[1]+1), layer=6)
+            self.fig.vx = (30 - pos[0])/7
+            self.fig.vy = (23-pos[1])/7
+            self.remove_child(self.fig, remove_completely=True)
+            self.dispatcher.register_listener(self.fig, 'tick')
+            self.terminal.add_widget(self.fig, (pos[0]+1, pos[1]+1), layer=6)
             self.add_child(self.manager.create_figure(), (1, 1))
