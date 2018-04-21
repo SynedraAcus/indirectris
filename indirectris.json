@@ -1,4 +1,5 @@
-{
+[
+    {
     "name": "attractor",
     "x": 1,
     "y": 11,
@@ -6,135 +7,136 @@
     "ysize": 5
 },
 {
-    "name": "f_Ih",
-    "x": 0,
-    "y": 0,
-    "xsize": 4,
-    "ysize": 1
+"name": "f_Ih",
+"x": 0,
+"y": 0,
+"xsize": 4,
+"ysize": 1
 },
 {
-    "name": "f_Iv",
-    "x": 5,
-    "y": 0,
-    "xsize": 1,
-    "ysize": 4
+"name": "f_Iv",
+"x": 5,
+"y": 0,
+"xsize": 1,
+"ysize": 4
 },
 {
-    "name": "f_O",
-    "x": 0,
-    "y": 2,
-    "xsize": 2,
-    "ysize": 2
+"name": "f_O",
+"x": 0,
+"y": 2,
+"xsize": 2,
+"ysize": 2
 },
 {
-    "name": "f_J1",
-    "x": 7,
-    "y": 0,
-    "xsize": 3,
-    "ysize": 2
+"name": "f_J1",
+"x": 7,
+"y": 0,
+"xsize": 3,
+"ysize": 2
 },
 {
-    "name": "f_J2",
-    "x": 7,
-    "y": 2,
-    "xsize": 3,
-    "ysize": 2
+"name": "f_J2",
+"x": 7,
+"y": 2,
+"xsize": 3,
+"ysize": 2
 },
 {
-    "name": "f_J3",
-    "x": 7,
-    "y": 4,
-    "xsize": 2,
-    "ysize": 3
+"name": "f_J3",
+"x": 7,
+"y": 4,
+"xsize": 2,
+"ysize": 3
 },
 {
-    "name": "f_J4",
-    "x": 8,
-    "y": 7,
-    "xsize": 2,
-    "ysize": 3
+"name": "f_J4",
+"x": 8,
+"y": 7,
+"xsize": 2,
+"ysize": 3
 },
 {
-    "name": "f_Zh",
-    "x": 11,
-    "y": 0,
-    "xsize": 3,
-    "ysize": 2
+"name": "f_Zh",
+"x": 11,
+"y": 0,
+"xsize": 3,
+"ysize": 2
 },
 {
-    "name": "f_Zv",
-    "x": 11,
-    "y": 3,
-    "xsize": 2,
-    "ysize": 3
+"name": "f_Zv",
+"x": 11,
+"y": 3,
+"xsize": 2,
+"ysize": 3
 },
 {
-    "name": "f_Sh",
-    "x": 15,
-    "y": 0,
-    "xsize": 3,
-    "ysize": 2
+"name": "f_Sh",
+"x": 15,
+"y": 0,
+"xsize": 3,
+"ysize": 2
 },
 {
-    "name": "f_Sv",
-    "x": 15,
-    "y": 3,
-    "xsize": 2,
-    "ysize": 3
+"name": "f_Sv",
+"x": 15,
+"y": 3,
+"xsize": 2,
+"ysize": 3
 },
 {
-    "name": "f_L1",
-    "x": 19,
-    "y": 0,
-    "xsize": 3,
-    "ysize": 2
+"name": "f_L1",
+"x": 19,
+"y": 0,
+"xsize": 3,
+"ysize": 2
 },
 {
-    "name": "f_L2",
-    "x": 19,
-    "y": 2,
-    "xsize": 3,
-    "ysize": 2
+"name": "f_L2",
+"x": 19,
+"y": 2,
+"xsize": 3,
+"ysize": 2
 },
 {
-    "name": "f_L3",
-    "x": 18,
-    "y": 5,
-    "xsize": 2,
-    "ysize": 3
+"name": "f_L3",
+"x": 18,
+"y": 5,
+"xsize": 2,
+"ysize": 3
 },
 {
-    "name": "f_L4",
-    "x": 20,
-    "y": 5,
-    "xsize": 2,
-    "ysize": 3
+"name": "f_L4",
+"x": 20,
+"y": 5,
+"xsize": 2,
+"ysize": 3
 },
 {
-    "name": "f_T1",
-    "x": 23,
-    "y": 0,
-    "xsize": 3,
-    "ysize": 2
+"name": "f_T1",
+"x": 23,
+"y": 0,
+"xsize": 3,
+"ysize": 2
 },
 {
-    "name": "f_T2",
-    "x": 23,
-    "y": 3,
-    "xsize": 2,
-    "ysize": 3
+"name": "f_T2",
+"x": 23,
+"y": 3,
+"xsize": 2,
+"ysize": 3
 },
 {
-    "name": "f_T3",
-    "x": 23,
-    "y": 7,
-    "xsize": 2,
-    "ysize": 3
+"name": "f_T3",
+"x": 23,
+"y": 7,
+"xsize": 2,
+"ysize": 3
 },
 {
-    "name": "f_T4",
-    "x": 23,
-    "y": 9,
-    "xsize": 3,
-    "ysize": 2
-},
+"name": "f_T4",
+"x": 23,
+"y": 9,
+"xsize": 3,
+"ysize": 2
+}
+]
