@@ -9,7 +9,7 @@ from bear_hug.widgets import Widget, ClosingListener, Label,Listener, \
     LoggingListener, FPSCounter
 
 from gravity import GravityField, Attractor, Attractee, TetrisSystem, \
-    FigureManager, BuildingWidget
+    FigureManager, BuildingWidget, EmitterWidget
 
 
 class Refresher(Listener):
@@ -51,13 +51,17 @@ dispatcher.register_listener(figures, ['request_destruction',
                                        'request_installation'])
 dispatcher.register_listener(building, ['square', 'h7', 'v7'])
 
-# building.add_figure(Widget([['*', '*', '*'], ['*', '*', '*'], ['*', '*', '*']],
-#                      [['blue', 'blue', 'blue'], ['blue', 'blue', 'blue'],
-#                       ['blue', 'blue', 'blue']]), pos=(25, 25))
-building.add_figure(Widget([['*' for x in range(7)]], [['blue' for x in range(7)]]),
-                           pos=(25, 25))
-for x_off in range(7):
-        tetris[25+x_off][25] = 1
+# The construction's start
+building.add_figure(Widget([[' ', '*', ' '], ['*', '*', '*'], [' ', '*', ' ']],
+                     [['blue', 'blue', 'blue'], ['blue', 'blue', 'blue'],
+                      ['blue', 'blue', 'blue']]), pos=(29, 20))
+tetris[30][20] = 1
+tetris[29][21] = 1
+tetris[30][21] = 1
+tetris[31][21] = 1
+tetris[30][22] = 1
+
+# Emitter and attractors
 attractor = Attractor(*atlas.get_element('attractor'),
                       field=field, mass=150)
 field.add_attractor(attractor, (10, 25))
@@ -66,6 +70,8 @@ attractor2 = Attractor(*atlas.get_element('attractor'),
 field.add_attractor(attractor2, (50, 25))
 dispatcher.register_listener(attractor, ['misc_input', 'key_up', 'key_down'])
 dispatcher.register_listener(attractor2, ['misc_input', 'key_up', 'key_down'])
+emitter = EmitterWidget(*atlas.get_element('emitter'), manager=figures)
+dispatcher.register_listener(emitter, 'tick')
 
 # Debug stuff
 logger = LoggingListener(sys.stdout)
@@ -80,5 +86,6 @@ figures.create_figure()
 t.add_widget(building, pos=(0, 0), layer=0)
 t.add_widget(attractor, pos=(10, 25), layer=1)
 t.add_widget(attractor2, pos=(50, 25), layer=3)
+t.add_widget(emitter, pos=(40, 40), layer=4)
 t.add_widget(fps, pos=(0, 44), layer=1)
 loop.run()

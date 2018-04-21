@@ -6,6 +6,14 @@
     "xsize": 5,
     "ysize": 5
 },
+    {
+      "name": "emitter",
+      "x": 7,
+      "y": 11,
+      "xsize": 5,
+      "ysize": 5
+
+    },
 {
 "name": "f_Ih",
 "x": 0,

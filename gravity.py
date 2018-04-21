@@ -4,7 +4,7 @@ A gravity system and basic attractor/attractee/gravfield classes
 
 from bear_hug.bear_utilities import copy_shape
 from bear_hug.event import BearEvent
-from bear_hug.widgets import Widget, Listener
+from bear_hug.widgets import Widget, Listener, Layout
 
 from collections import namedtuple
 from math import sqrt
@@ -349,3 +349,64 @@ class Attractee(Widget):
                 elif t == 2:
                     return BearEvent(event_type='request_destruction',
                                      event_value=self)
+
+
+class EmitterWidget(Layout):
+    """
+    A thing that emits widgets when either request_destruction or
+    request_installation happens
+    
+    Else it just travels around screen edges.
+    """
+    def __init__(self, chars, colors, manager):
+        super().__init__(chars, colors)
+        self.manager = manager
+        self.have_waited = 0
+        self.abs_vx = 25
+        self.abs_vy = 25
+        # Initially moves to the left
+        self.vx = -1 * self.abs_vx
+        self.delay = 1/self.abs_vx
+        self.vy = 0
+        
+    def on_event(self, event):
+        if event.event_type == 'tick':
+            self.have_waited += event.event_value
+            if self.have_waited >= self.delay:
+                pos = self.terminal.widget_locations[self].pos
+                if self.vx != 0:
+                    new_x = pos[0]+round(abs(self.vx)/self.vx)
+                else:
+                    new_x = pos[0]
+                if self.vy != 0:
+                    new_y = pos[1]+round(abs(self.vy)/self.vy)
+                else:
+                    new_y = pos[1]
+                self.terminal.move_widget(self, (new_x, new_y))
+                # The emitter always moves clockwise
+                # So some stuff is hardcoded
+                if new_x == 0 and self.vx < 0:
+                    print('up')
+                    #Lower left
+                    self.vx = 0
+                    self.vy = -1 * self.abs_vy
+                    self.delay = 1/self.abs_vy
+                elif new_y == 0 and self.vy < 0:
+                    # Upper left
+                    print('right')
+                    self.vy = 0
+                    self.vx = self.abs_vx
+                    self.delay = 1/self.abs_vx
+                elif new_x + self.width == 60 and self.vx > 0:
+                    #Upper right
+                    self.vx = 0
+                    self.vy = self.abs_vy
+                    self.delay = 1/self.abs_vy
+                elif new_y + self.height == 45 and self.vy > 0:
+                    # Lower right
+                    self.vx = -1 * self.abs_vx
+                    self.vy = 0
+                    self.delay = 1/self.abs_vx
+                
+                self.have_waited = 0
+                
