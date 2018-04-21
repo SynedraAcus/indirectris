@@ -2,8 +2,9 @@
 A gravity system and basic attractor/attractee/gravfield classes
 """
 
-from bear_hug.widgets import Widget, Listener
+from bear_hug.bear_utilities import copy_shape
 from bear_hug.event import BearEvent
+from bear_hug.widgets import Widget, Listener
 from collections import namedtuple
 from math import sqrt
 
@@ -105,24 +106,30 @@ class TetrisSystem:
             self.cells[0][y] = 2
             self.cells[size[0]-1][y] = 2
             
-    def check_move(self, pos, fig_shape):
-        for x_offset in range(len(fig_shape)):
-            for y_offset in range(len(fig_shape[0])):
+    def check_move(self, pos, chars):
+        for x_offset in range(len(chars[0])):
+            for y_offset in range(len(chars)):
                 c = self.cells[pos[0]+x_offset][pos[1] + y_offset]
-                if c > 0 :
+                if c > 0 and chars[y_offset][x_offset] != ' ':
                     return c
         return 0
+    
+    def __getitem__(self, item):
+        return self.cells[item]
         
         
 class FigureManager(Listener):
-    def __init__(self, field, tetris, dispatcher):
+    def __init__(self, field, tetris, dispatcher, building):
         self.field = field
         self.tetris = tetris
         self.dispatcher = dispatcher
+        self.building = building
     
     def on_event(self, event):
         if event.event_type == 'request_destruction':
             self.destroy_figure(event.event_value)
+        elif event.event_type == 'request_installation':
+            self.stop_figure(event.event_value)
     
     def create_figure(self):
         fig_widget = Attractee([['*', '*'], ['*', '*']],
@@ -136,8 +143,49 @@ class FigureManager(Listener):
         self.terminal.remove_widget(widget)
         self.dispatcher.unregister_listener(widget, 'all')
         self.create_figure()
+        
+    def stop_figure(self, widget):
+        """
+        Remove figure widget, give its cells to the building and set tetris'
+        cells to 1 where there was a figure element
+        :param widget:
+        :return:
+        """
+        pos = self.terminal.widget_locations[widget].pos
+        self.building.add_figure(widget, pos)
+        for x_offset in range(widget.width):
+            for y_offset in range(widget.height):
+                if widget.chars[y_offset][x_offset] != ' ':
+                    self.tetris[pos[0]+x_offset][pos[1]+y_offset] = 1
+        self.destroy_figure(widget)
 
 
+class BuildingWidget(Widget):
+    """
+    A widget that displays all the already installed blocks
+    
+    It only *displays* them, ie any logic is in TetrisSystem or widgets' code
+    """
+    def __init__(self, size):
+        chars = [['.' for x in range(size[0])] for y in range(size[1])]
+        colors = copy_shape(chars, 'dark gray')
+        super().__init__(chars, colors)
+    
+    def add_figure(self, figure, pos):
+        for y_offset in range(figure.height):
+            for x_offset in range(figure.width):
+                if figure.chars[y_offset][x_offset] != ' ':
+                    self.chars[pos[1]+y_offset][pos[0]+x_offset] =\
+                        figure.chars[y_offset][x_offset]
+                    self.colors[pos[1]+y_offset][pos[0]+x_offset] = \
+                        figure.colors[y_offset][x_offset]
+        if self.terminal:
+            self.terminal.update_widget(self)
+    
+    def remove_region(self, pos, shape):
+        pass
+    
+    
 class Attractor(Widget):
     def __init__(self, *args, mass=100, field=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -223,10 +271,13 @@ class Attractee(Widget):
             else:
                 new_y = ypos
             if new_x != xpos or new_y != ypos:
-                t = self.tetris.check_move((new_x, new_y), fig_shape=self.chars)
+                t = self.tetris.check_move((new_x, new_y), self.chars)
                 print(t)
                 if t == 0:
                     self.parent.move_widget(self, (new_x, new_y))
+                elif t == 1:
+                    return BearEvent(event_type='request_installation',
+                                     event_value=self)
                 elif t == 2:
                     return BearEvent(event_type='request_destruction',
                                      event_value=self)
