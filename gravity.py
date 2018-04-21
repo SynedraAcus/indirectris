@@ -1,5 +1,5 @@
 """
-A gravity system and basic attractor/attractee/gravfield classes
+Game classes
 """
 
 from bear_hug.bear_utilities import copy_shape
@@ -412,9 +412,12 @@ class EmitterWidget(Layout):
                 self.have_waited = 0
         elif event.event_type == 'request_installation' or \
                 event.event_type == 'request_destruction':
-            fig = self.children[1]
-            self.remove_child(fig, remove_completely=True)
             pos = self.terminal.widget_locations[self].pos
+            fig = self.children[1]
+            # The number 7 is empirical; maybe I'll change it later
+            fig.vx = (30 - pos[0])/7
+            fig.vy = (23-pos[1])/7
+            self.remove_child(fig, remove_completely=True)
             self.dispatcher.register_listener(fig, 'tick')
             self.terminal.add_widget(fig, (pos[0]+1, pos[1]+1), layer=6)
             self.add_child(self.manager.create_figure(), (1, 1))
