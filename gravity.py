@@ -358,10 +358,11 @@ class EmitterWidget(Layout):
     
     Else it just travels around screen edges.
     """
-    def __init__(self, chars, colors, manager, dispatcher):
+    def __init__(self, chars, colors, manager, dispatcher, tetris):
         super().__init__(chars, colors)
         self.manager = manager
         self.dispatcher = dispatcher
+        self.tetris = tetris
         self.have_waited = 0
         self.abs_vx = 25
         self.abs_vy = 25
@@ -410,6 +411,11 @@ class EmitterWidget(Layout):
                     self.vy = 0
                     self.delay = 1/self.abs_vx
                 self.have_waited = 0
+                for x_offset in range(5):
+                    for y_offset in range(5):
+                        if self.tetris[pos[0]+x_offset][pos[1]+y_offset] == 1:
+                            return BearEvent(event_type='game_lost',
+                                             event_value=None)
         elif event.event_type == 'request_installation' or \
                 event.event_type == 'request_destruction':
             pos = self.terminal.widget_locations[self].pos

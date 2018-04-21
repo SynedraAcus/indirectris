@@ -25,7 +25,28 @@ class Refresher(Listener):
     def on_event(self, event):
         if event.event_type == 'service' and event.event_value == 'tick_over':
             self.terminal.refresh()
-            
+
+
+class LosingListener(Listener):
+    """
+    A listener that, when game is lost, announces so.
+    """
+    def __init__(self, t, loss_widget):
+        self.terminal = t
+        self.loss_widget = loss_widget
+        self.showing = False
+        
+    def on_event(self, event):
+        if event.event_type == 'game_lost' and not self.showing:
+            self.showing = True
+            self.terminal.add_widget(self.loss_widget, pos=(5,5), layer=15)
+    
+    def clean(self):
+        if self.showing:
+            self.terminal.remove_widget(self.loss_widget)
+            self.showing = False
+        
+
 class RestartButton(Label):
     """
     A Label that restarts the game if clicked
@@ -82,6 +103,7 @@ def init_game():
     tetris[30][21] = 1
     tetris[31][21] = 1
     tetris[30][22] = 1
+    tetris[0][41] = 1
 
     # Emitter and attractors
     attractor = Attractor(*atlas.get_element('attractor'),
@@ -95,7 +117,7 @@ def init_game():
     dispatcher.register_listener(attractor2,
                                  ['misc_input', 'key_up', 'key_down'])
     emitter = EmitterWidget(*atlas.get_element('emitter'), manager=figures,
-                            dispatcher=dispatcher)
+                            dispatcher=dispatcher, tetris=tetris)
     dispatcher.register_listener(emitter, ['tick', 'service',
                                            'request_installation',
                                            'request_destruction'])
@@ -108,7 +130,6 @@ def init_game():
     t.add_widget(attractor2, pos=(50, 25), layer=3)
     t.add_widget(emitter, pos=(40, 40), layer=4)
     t.add_widget(initial_figure, pos=(25, 40), layer=6)
-    print(initial_figure)
     dispatcher.add_event(BearEvent(event_type='request_destruction',
                                    event_value=initial_figure))
     
@@ -143,16 +164,21 @@ def close_game():
     dispatcher.register_event_type('h7')
     dispatcher.register_event_type('v7')
     dispatcher.register_event_type('square')
+    dispatcher.register_event_type('game_lost')
     #  This is a patent black magic, but it solves some very
     # weird bug with restarting
     loop.queue = dispatcher
-    dispatcher.register_listener(ClosingListener(), ['misc_input', 'tick'])
+    dispatcher.register_listener(loop, 'service')
     dispatcher.register_listener(r, 'service')
     dispatcher.register_listener(fps, 'tick')
     dispatcher.register_listener(score, ['h7', 'v7', 'square'])
     dispatcher.register_listener(restart, 'key_down')
-    
-    
+    dispatcher.register_listener(losing, 'game_lost')
+    dispatcher.register_listener(ClosingListener(), ['misc_input', 'tick'])
+    dispatcher.register_listener(logger, ['service'])
+    losing.clean()
+
+
 # Standart BLT boilerplate
 t = BearTerminal(font_path='cp437_12x12.png', size='60x50', title='Indirectris',
                  filter=['keyboard', 'mouse'])
@@ -162,8 +188,10 @@ dispatcher.register_event_type('request_installation')
 dispatcher.register_event_type('h7')
 dispatcher.register_event_type('v7')
 dispatcher.register_event_type('square')
+dispatcher.register_event_type('game_lost')
 loop = BearLoop(t, dispatcher)
-dispatcher.register_listener(ClosingListener(), ['misc_input', 'tick'])
+closing = ClosingListener()
+dispatcher.register_listener(closing, ['misc_input', 'tick'])
 
 # Game objects
 # Init here so that the same objects can be reused (and safely created and
@@ -182,10 +210,11 @@ initial_figure = None
 # Debug stuff
 logger = LoggingListener(sys.stdout)
 fps = FPSCounter()
-# dispatcher.register_listener(logger, ['v7', 'h7', 'square'])
 r = Refresher(t)
 score = ScoreCounter()
 restart = RestartButton('RESTART', color='#ff0000ff')
+losing = LosingListener(t, Widget(*atlas.get_element('loss')))
+dispatcher.register_listener(losing, 'game_lost')
 dispatcher.register_listener(r, 'service')
 dispatcher.register_listener(fps, 'tick')
 dispatcher.register_listener(score, ['h7', 'v7', 'square'])

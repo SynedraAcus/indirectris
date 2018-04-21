@@ -20,7 +20,13 @@
     "xsize": 60,
     "ysize": 5
   },
-
+  {
+    "name": "loss",
+    "x": 0,
+    "y": 21,
+    "xsize": 51,
+    "ysize": 36
+  },
 {
 "name": "f_Ih",
 "x": 0,
