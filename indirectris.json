@@ -12,8 +12,15 @@
       "y": 11,
       "xsize": 5,
       "ysize": 5
-
     },
+  {
+    "name": "bottom_bar",
+  "x": 0,
+    "y": 16,
+    "xsize": 60,
+    "ysize": 5
+  },
+
 {
 "name": "f_Ih",
 "x": 0,

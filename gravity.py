@@ -288,13 +288,15 @@ class Attractor(Widget):
                         mouse_y != self.grab_pos[1]:
                     pos = self.terminal.widget_locations[self].pos
                     shift = (mouse_x-self.grab_pos[0], mouse_y - self.grab_pos[1])
-                    self.terminal.move_widget(self,
-                                (pos[0]+shift[0], pos[1]+shift[1]))
-                    self.grab_pos = (self.grab_pos[0]+shift[0],
-                                     self.grab_pos[1]+shift[1])
-                    self.terminal.refresh()
-                    self.field.move_attractor(self,
-                                          (pos[0]+shift[0], pos[1]+shift[1]))
+                    if -1 < pos[0] + shift[0] < 56 and\
+                            -1 < pos[1] + shift[1] < 41:
+                        self.terminal.move_widget(self,
+                                    (pos[0]+shift[0], pos[1]+shift[1]))
+                        self.grab_pos = (self.grab_pos[0]+shift[0],
+                                         self.grab_pos[1]+shift[1])
+                        self.terminal.refresh()
+                        self.field.move_attractor(self,
+                                              (pos[0]+shift[0], pos[1]+shift[1]))
                     
                     
 class Attractee(Widget):

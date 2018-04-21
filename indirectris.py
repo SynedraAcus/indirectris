@@ -10,7 +10,7 @@ from bear_hug.widgets import Widget, ClosingListener, Label,Listener, \
 
 from gravity import GravityField, Attractor, Attractee, TetrisSystem, \
     FigureManager, BuildingWidget, EmitterWidget
-
+from embellish import ScoreCounter
 
 class Refresher(Listener):
     """
@@ -25,7 +25,7 @@ class Refresher(Listener):
             self.terminal.refresh()
             
 # Standart BLT boilerplate
-t = BearTerminal(font_path='cp437_12x12.png', size='60x45', title='Indirectris',
+t = BearTerminal(font_path='cp437_12x12.png', size='60x50', title='Indirectris',
                  filter=['keyboard', 'mouse'])
 dispatcher = BearEventDispatcher()
 dispatcher.register_event_type('request_destruction')
@@ -84,8 +84,12 @@ dispatcher.register_listener(fps, 'tick')
 dispatcher.register_listener(logger, ['v7', 'h7', 'square'])
 r = Refresher(t)
 dispatcher.register_listener(r, 'service')
+score = ScoreCounter()
+dispatcher.register_listener(score, ['h7', 'v7', 'square'])
 
 t.start()
+t.add_widget(Widget(*atlas.get_element('bottom_bar')), pos=(0, 45), layer=0)
+t.add_widget(score, pos=(39, 47), layer=1)
 t.add_widget(initial_figure, pos=(25, 40), layer=6)
 t.add_widget(building, pos=(0, 0), layer=0)
 t.add_widget(attractor, pos=(10, 25), layer=1)
