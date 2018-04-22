@@ -8,6 +8,7 @@ from bear_hug.event import BearEventDispatcher, BearEvent
 from bear_hug.resources import XpLoader, Atlas
 from bear_hug.widgets import Widget, ClosingListener, Label,Listener, \
     LoggingListener, FPSCounter
+from bear_hug.sound import SoundListener
 
 from gravity import GravityField, Attractor, Attractee, TetrisSystem, \
     FigureManager, BuildingWidget, EmitterWidget
@@ -92,7 +93,10 @@ def init_game():
     dispatcher.register_listener(figures, ['request_destruction',
                                            'request_installation'])
     dispatcher.register_listener(building, ['square', 'h7', 'v7'])
-
+    sound = SoundListener({'fly_away': 'Fly.wav',
+                           'explosion': 'Explosion.wav',
+                           'connect': 'Connect.wav'})
+    dispatcher.register_listener(sound, 'play_sound')
     # The construction's start
     building.add_figure(
         Widget([[' ', '*', ' '], ['*', '*', '*'], [' ', '*', ' ']],
@@ -103,7 +107,6 @@ def init_game():
     tetris[30][21] = 1
     tetris[31][21] = 1
     tetris[30][22] = 1
-    tetris[0][41] = 1
 
     # Emitter and attractors
     attractor = Attractor(*atlas.get_element('attractor'),
@@ -206,6 +209,7 @@ attractor2 = None
 emitter = None
 score = None
 initial_figure = None
+sound = None
 
 # Debug stuff
 logger = LoggingListener(sys.stdout)

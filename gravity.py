@@ -137,8 +137,10 @@ class TetrisSystem:
                         if h7:
                             for x_1 in range(7):
                                 self[x+x_1][y] = 0
-                            r.append(BearEvent(event_type='h7',
-                                           event_value=(x, y)))
+                            r += [BearEvent(event_type='h7',
+                                           event_value=(x, y)),
+                                  BearEvent(event_type='play_sound',
+                                            event_value='explosion')]
                     if y <= len(self.cells[0]) - 7:
                         # Or a vertical 7
                         v7 = True
@@ -148,8 +150,10 @@ class TetrisSystem:
                         if v7:
                             for y_1 in range(1, 7):
                                 self[x][y+y_1] = 0
-                            r.append(BearEvent(event_type='v7',
-                                               event_value=(x, y)))
+                            r += [(BearEvent(event_type='v7',
+                                               event_value=(x, y))),
+                                  BearEvent(event_type='play_sound',
+                                            event_value='explosion')]
                     if x <= len(self.cells)-3 and y <= len(self.cells[0])-3:
                         sq = True
                         for x_1 in range(3):
@@ -160,8 +164,10 @@ class TetrisSystem:
                             for x_1 in range(3):
                                 for y_1 in range(3):
                                     self[x+x_1][y+y_1] = 0
-                            r.append(BearEvent(event_type='square',
-                                               event_value=(x, y)))
+                            r += [BearEvent(event_type='square',
+                                               event_value=(x, y)),
+                                 BearEvent(event_type='play_sound',
+                                           event_value='explosion')]
         return r
     
     def __getitem__(self, item):
@@ -202,7 +208,6 @@ class FigureManager(Listener):
         :param widget:
         :return:
         """
-        print(self.terminal.widget_locations)
         pos = self.terminal.widget_locations[widget].pos
         self.building.add_figure(widget, pos)
         for x_offset in range(widget.width):
@@ -344,11 +349,15 @@ class Attractee(Widget):
                 if t == 0:
                     self.parent.move_widget(self, (new_x, new_y))
                 elif t == 1:
-                    return BearEvent(event_type='request_installation',
-                                     event_value=self)
+                    return [BearEvent(event_type='request_installation',
+                                      event_value=self),
+                            BearEvent(event_type='play_sound',
+                                      event_value='connect')]
                 elif t == 2:
-                    return BearEvent(event_type='request_destruction',
-                                     event_value=self)
+                    return [BearEvent(event_type='request_destruction',
+                                     event_value=self),
+                            BearEvent(event_type='play_sound',
+                                      event_value='fly_away')]
 
 
 class EmitterWidget(Layout):
