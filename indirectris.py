@@ -95,7 +95,8 @@ def init_game():
     dispatcher.register_listener(building, ['square', 'h7', 'v7'])
     sound = SoundListener({'fly_away': 'Fly.wav',
                            'explosion': 'Explosion.wav',
-                           'connect': 'Connect.wav'})
+                           'connect': 'Connect.wav',
+                           'fail': 'Fail.wav'})
     dispatcher.register_listener(sound, 'play_sound')
     # The construction's start
     building.add_figure(

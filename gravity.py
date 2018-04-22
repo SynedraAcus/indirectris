@@ -423,8 +423,10 @@ class EmitterWidget(Layout):
                 for x_offset in range(5):
                     for y_offset in range(5):
                         if self.tetris[pos[0]+x_offset][pos[1]+y_offset] == 1:
-                            return BearEvent(event_type='game_lost',
-                                             event_value=None)
+                            return [BearEvent(event_type='game_lost',
+                                              event_value=None),
+                                    BearEvent(event_type='play_sound',
+                                              event_value='fail')]
         elif event.event_type == 'request_installation' or \
                 event.event_type == 'request_destruction':
             pos = self.terminal.widget_locations[self].pos
