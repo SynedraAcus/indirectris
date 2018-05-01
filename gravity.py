@@ -259,6 +259,7 @@ class BuildingWidget(Widget):
 
     
 class Attractor(Widget):
+    # TODO: centers of mass for attractor and attractee
     def __init__(self, *args, mass=100, field=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.mass = mass

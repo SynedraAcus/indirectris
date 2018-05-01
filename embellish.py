@@ -24,9 +24,3 @@ class ScoreCounter(Label):
             self.text = str(self.score).rjust(5, '0')
             if self.parent is self.terminal:
                 self.terminal.update_widget(self, refresh=False)
-
-
-class SoundEmitter(Label):
-    """
-    Emits the sound on line destruction, block flying away and game being lost
-    """

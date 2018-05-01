@@ -1,16 +1,14 @@
 #! /usr/bin/env python3.6
 
 import sys
-from collections import deque
 
 from bear_hug.bear_hug import BearTerminal, BearLoop
 from bear_hug.event import BearEventDispatcher, BearEvent
 from bear_hug.resources import XpLoader, Atlas
-from bear_hug.widgets import Widget, ClosingListener, Label,Listener, \
-    LoggingListener, FPSCounter
+from bear_hug.widgets import Widget, ClosingListener, Label, Listener
 from bear_hug.sound import SoundListener
 
-from gravity import GravityField, Attractor, Attractee, TetrisSystem, \
+from gravity import GravityField, Attractor, TetrisSystem, \
     FigureManager, BuildingWidget, EmitterWidget
 from embellish import ScoreCounter
 
@@ -174,12 +172,10 @@ def close_game():
     loop.queue = dispatcher
     dispatcher.register_listener(loop, 'service')
     dispatcher.register_listener(r, 'service')
-    dispatcher.register_listener(fps, 'tick')
     dispatcher.register_listener(score, ['h7', 'v7', 'square'])
     dispatcher.register_listener(restart, 'key_down')
     dispatcher.register_listener(losing, 'game_lost')
     dispatcher.register_listener(ClosingListener(), ['misc_input', 'tick'])
-    dispatcher.register_listener(logger, ['service'])
     losing.clean()
 
 
@@ -213,15 +209,12 @@ initial_figure = None
 sound = None
 
 # Debug stuff
-logger = LoggingListener(sys.stdout)
-fps = FPSCounter()
 r = Refresher(t)
 score = ScoreCounter()
 restart = RestartButton('RESTART', color='#ff0000ff')
 losing = LosingListener(t, Widget(*atlas.get_element('loss')))
 dispatcher.register_listener(losing, 'game_lost')
 dispatcher.register_listener(r, 'service')
-dispatcher.register_listener(fps, 'tick')
 dispatcher.register_listener(score, ['h7', 'v7', 'square'])
 dispatcher.register_listener(restart, 'key_down')
 
@@ -229,5 +222,4 @@ t.start()
 init_game()
 t.add_widget(Widget(*atlas.get_element('bottom_bar')), pos=(0, 45), layer=0)
 t.add_widget(restart, pos=(49, 47), layer=1)
-t.add_widget(fps, pos=(0, 44), layer=1)
 loop.run()
