@@ -4,7 +4,7 @@
 
 Indirect control tetris for LD41. 64-bit Linux and Windows builds
 available from the
-[entry page](https://ldjam.com/events/ludum-dare/41/indirectris))
+[entry page](https://ldjam.com/events/ludum-dare/41/indirectris)
 
 #### Gameplay & Controls
 The falling tetramino is controlled by the attractors' gravitational
