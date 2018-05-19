@@ -54,16 +54,21 @@ class GravityField:
         """
         for x in range(self.size[0]):
             for y in range(self.size[1]):
-                dist = sqrt((x - self.positions[attractor][0])**2 + (y - self.positions[attractor][1])**2)
-                if self.positions[attractor][0] != x:
-                    a_x = attractor.mass * abs(x - self.positions[attractor][0]) / dist ** 3
-                    if self.positions[attractor][0] <= x:
+                dist = sqrt((x - self.positions[attractor][0] -
+                                 attractor.mass_center[0]) ** 2 +
+                            (y - self.positions[attractor][1] -
+                                 attractor.mass_center[1]) ** 2)
+                if self.positions[attractor][0] + attractor.mass_center[0] != x:
+                    a_x = attractor.mass * abs(x - self.positions[attractor][0]
+                                       - attractor.mass_center[0]) / dist ** 3
+                    if self.positions[attractor][0] + attractor.mass_center[0] < x:
                         a_x *= -1
                 else:
                     a_x = 0
-                if self.positions[attractor][1] != y:
-                    a_y = attractor.mass * abs(y - self.positions[attractor][1]) / dist ** 3
-                    if self.positions[attractor][1] <= y:
+                if self.positions[attractor][1] + attractor.mass_center[1] != y:
+                    a_y = attractor.mass * abs(y - self.positions[attractor][1]
+                                           - attractor.mass_center[1]) / dist ** 3
+                    if self.positions[attractor][1] + attractor.mass_center[1] < y:
                         a_y *= -1
                 else:
                     a_y = 0
@@ -259,9 +264,10 @@ class BuildingWidget(Widget):
 
     
 class Attractor(Widget):
-    # TODO: centers of mass for attractor and attractee
-    def __init__(self, *args, mass=100, field=None, **kwargs):
+    def __init__(self, *args, mass=100, field=None, mass_center=(2, 2),
+                 **kwargs):
         super().__init__(*args, **kwargs)
+        self.mass_center = mass_center
         self.mass = mass
         self.field = field
         self.dragged = False
