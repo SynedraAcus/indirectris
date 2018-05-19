@@ -77,6 +77,7 @@ def init_game():
     global attractor2
     global emitter
     global initial_figure
+    global score
     global loop
     global dispatcher
     field = GravityField((60, 45))
@@ -125,6 +126,8 @@ def init_game():
                                            'request_destruction'])
     initial_figure = figures.create_figure()
     dispatcher.register_listener(initial_figure, 'tick')
+    score = ScoreCounter()
+    dispatcher.register_listener(score, ['h7', 'v7', 'square'])
     # Adding stuff
     t.add_widget(score, pos=(39, 47), layer=1)
     t.add_widget(building, pos=(0, 0), layer=0)
@@ -210,12 +213,10 @@ sound = None
 
 # Debug stuff
 r = Refresher(t)
-score = ScoreCounter()
 restart = RestartButton('RESTART', color='#ff0000ff')
 losing = LosingListener(t, Widget(*atlas.get_element('loss')))
 dispatcher.register_listener(losing, 'game_lost')
 dispatcher.register_listener(r, 'service')
-dispatcher.register_listener(score, ['h7', 'v7', 'square'])
 dispatcher.register_listener(restart, 'key_down')
 
 t.start()
